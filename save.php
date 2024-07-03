@@ -2,7 +2,7 @@
 
 include 'db_connection.php';
 
-if ($_REQUEST == 'add') {
+if ($_REQUEST['type'] == 'add') {
     // Sample data
     $name = $_REQUEST['name'];
     $email = $_REQUEST['email'];
