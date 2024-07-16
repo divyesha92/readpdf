@@ -40,6 +40,34 @@
         .action-icons a {
             margin: 0 5px; /* Optional: add margin between icons */
         }
+        /* Hide table content during drag */
+        #dataTable.dragging tbody {
+            visibility: hidden;
+        }
+
+        /* Style the table box during drag-over */
+        #dataTable.dragging {
+            border: 2px dashed #00aaff;
+            background-color: rgba(0, 170, 255, 0.1);
+            position: relative; /* Ensure positioning context for drop-message */
+        }
+        /* Drop message styling */
+        .drop-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px;
+            color: #00aaff;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 10;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.5); /* Light transparent background */
+            border-radius: 5px;
+            pointer-events: none; /* Ensure the message does not capture mouse events */
+        }
     </style>
 </head>
 <body class="bg-white">
@@ -90,6 +118,7 @@
 
             <div class="container mt-4">
                 <!-- <div class="table-responsive"> -->
+                    <div id="dropMessage" class="drop-message">Drop to upload File</div>
                     <table id="dataTable" class="table table-striped1 table-bordered" style="width:100%">
                         <thead>
                             <tr>
@@ -240,6 +269,78 @@
                 "loadingRecords": "Loading...",
                 "zeroRecords": "No records found"
             },
+            "initComplete": function(settings, json) {
+                // Initialize Dropzone on table rows
+                var myDropzone = new Dropzone("#dataTable", {
+                    url: "read_data_from_pdf.php",
+                    paramName: "file",
+                    maxFilesize: 50, // MB
+                    maxFiles: 1,
+                    acceptedFiles: ".pdf, .doc, .docx",
+                    addRemoveLinks: true,
+                    clickable: false, // Disable clickable file input
+                    init: function() {
+                        var dropMessage = $("#dropMessage");
+
+                        this.on("dragenter", function(event) {
+                            if ($(event.target).closest('#dataTable').length) {
+                                $("#dataTable").addClass("dragging");
+                                dropMessage.show();
+                            }
+                        });
+
+                        this.on("dragleave", function(event) {
+                            if (!$(event.target).closest('#dataTable').length) {
+                                $("#dataTable").removeClass("dragging");
+                                dropMessage.hide();
+                            }
+                        });
+
+                        this.on("drop", function(event) {
+                            $("#dataTable").removeClass("dragging");
+                            dropMessage.hide();
+                        });
+
+                        this.on("dragover", function(event) {
+                            event.preventDefault();
+                        });
+
+                        this.on("success", function(file, response) {
+                            myDropzone.removeAllFiles(true);
+                            showModal(response);
+                        });
+
+                        this.on("error", function(file, errorMessage, xhr) {
+                            var response = xhr ? xhr.responseText : errorMessage;
+                            handleResponse(response, "error");
+                            myDropzone.removeFile(file);
+                        });
+                    }
+                });
+
+                // Handle the case when the drag leaves the window
+                $(document).on('dragleave', function(event) {
+                    if (event.originalEvent.screenX === 0 && event.originalEvent.screenY === 0) {
+                        $("#dataTable").removeClass("dragging");
+                        $("#dropMessage").hide();
+                    }
+                });
+
+                // Handle the case when the drag enters or leaves the document
+                $(document).on('dragenter', function(event) {
+                    if (!$(event.target).closest('#dataTable').length) {
+                        $("#dataTable").removeClass("dragging");
+                        $("#dropMessage").hide();
+                    }
+                });
+
+                $(document).on('drop', function(event) {
+                    if (!$(event.target).closest('#dataTable').length) {
+                        $("#dataTable").removeClass("dragging");
+                        $("#dropMessage").hide();
+                    }
+                });
+            }
         });
 
         $('#dataTable_wrapper').find('.row:nth-child(1), .row:nth-child(3)').addClass('row-cards');
