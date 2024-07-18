@@ -270,6 +270,23 @@
                 "zeroRecords": "No records found"
             },
             "initComplete": function(settings, json) {
+                // Adjust column classes
+                var lengthDiv = $('#dataTable_length').parent();
+                var filterDiv = $('#dataTable_filter').parent();
+
+                lengthDiv.removeClass('col-md-6').addClass('col-md-3 kan');
+                filterDiv.removeClass('col-md-6').addClass('col-md-3');
+
+                // Add buttons container
+                var buttonsHtml = '<div class="col-md-6 text-center">' +
+                                    '<button class="btn btn-primary mx-1">All</button>' +
+                                    '<button class="btn btn-secondary mx-1">Open</button>' +
+                                    '<button class="btn btn-success mx-1">Selected</button>' +
+                                    '<button class="btn btn-danger mx-1">Rejected</button>' +
+                                    '<button class="btn btn-warning mx-1">Deferred</button>' +
+                                  '</div>';
+                $(buttonsHtml).insertAfter(lengthDiv);
+
                 // Initialize Dropzone on table rows
                 var myDropzone = new Dropzone("#dataTable", {
                     url: "read_data_from_pdf.php",
@@ -343,7 +360,7 @@
             }
         });
 
-        $('#dataTable_wrapper').find('.row:nth-child(1), .row:nth-child(3)').addClass('row-cards');
+        $('#dataTable_wrapper').find('.row:nth-child(1), .row:nth-child(3)').addClass('row-cards dvs');
         $('#dataTable_wrapper').find('.row:nth-child(2)').find('.col-sm-12').addClass('table-responsive');
 
         // Initialize Bootstrap tooltips
